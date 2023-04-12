@@ -10,4 +10,10 @@ class _Item {
   late int quantity;
 
   late DateTime createdAt;
+  
+  late bool isPaid;
+  
+  void toggleChecked() {
+    isPaid = !isPaid;
+  }
 }

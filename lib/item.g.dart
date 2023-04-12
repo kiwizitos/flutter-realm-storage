@@ -12,11 +12,13 @@ class Item extends _Item with RealmEntity, RealmObjectBase, RealmObject {
     String name,
     int quantity,
     DateTime createdAt,
+    bool isPaid,
   ) {
     RealmObjectBase.set(this, 'id', id);
     RealmObjectBase.set(this, 'name', name);
     RealmObjectBase.set(this, 'quantity', quantity);
     RealmObjectBase.set(this, 'createdAt', createdAt);
+    RealmObjectBase.set(this, 'isPaid', isPaid);
   }
 
   Item._();
@@ -44,6 +46,11 @@ class Item extends _Item with RealmEntity, RealmObjectBase, RealmObject {
       RealmObjectBase.set(this, 'createdAt', value);
 
   @override
+  bool get isPaid => RealmObjectBase.get<bool>(this, 'isPaid') as bool;
+  @override
+  set isPaid(bool value) => RealmObjectBase.set(this, 'isPaid', value);
+
+  @override
   Stream<RealmObjectChanges<Item>> get changes =>
       RealmObjectBase.getChanges<Item>(this);
 
@@ -59,6 +66,7 @@ class Item extends _Item with RealmEntity, RealmObjectBase, RealmObject {
       SchemaProperty('name', RealmPropertyType.string),
       SchemaProperty('quantity', RealmPropertyType.int),
       SchemaProperty('createdAt', RealmPropertyType.timestamp),
+      SchemaProperty('isPaid', RealmPropertyType.bool),
     ]);
   }
 }

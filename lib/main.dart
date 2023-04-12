@@ -52,12 +52,12 @@ class _MainState extends State<Main> {
   Widget build(BuildContext context) {
     var realm = Realm(config);
     var items = realm.all<Item>();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Hello"),
       ),
       body: SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
         child: Column(
           children: [
             Card(
@@ -97,8 +97,6 @@ class _MainState extends State<Main> {
                         ),
                       ),
                       onPressed: () {
-                        print(DateTime.now().timeZoneName);
-                        print(DateTime.now().hour);
                         setState(() {
                           realm.write(() {
                             realm.add(
@@ -111,10 +109,10 @@ class _MainState extends State<Main> {
                                     hours: -3,
                                   ),
                                 ),
+                                false,
                               ),
                             );
                           });
-                          realm.close();
                         });
                       },
                       child: const Icon(Icons.arrow_right),
@@ -131,47 +129,71 @@ class _MainState extends State<Main> {
                 itemBuilder: (context, index) {
                   final item = items[index];
 
-                  return Card(
-                    child: ListTile(
-                      leading: Container(
-                        height: 40,
-                        width: 40,
-                        alignment: Alignment.center,
-                        child: Text(
-                          item.quantity.toString(),
+                  return Dismissible(
+                    key: UniqueKey(),
+                    background: Card(
+                      child: Container(
+                        alignment: AlignmentDirectional.centerEnd,
+                        color: Colors.redAccent,
+                        child: const Padding(
+                          padding: EdgeInsets.only(right: 16),
+                          child: Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                      title: Text(
-                        item.name,
-                      ),
-                      subtitle: Text(
-                        formattedDate(
-                          item.createdAt,
-                        ),
-                      ),
-                      trailing: SizedBox(
-                        width: 150,
-                        child: Row(
+                    ),
+                    direction: DismissDirection.endToStart,
+                    onDismissed: (direction) {
+                      setState(() {
+                        realm.write(() {
+                          realm.delete(item);
+                        });
+                        realm.close();
+                      });
+                    },
+                    child: Card(
+                      child: CheckboxListTile(
+                        title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
+                              item.name,
+                            ),
+                            Text(
                               "R\$${((item.quantity) * 5).toString()}.00",
                             ),
-                            IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    realm.write(() {
-                                      realm.delete(item);
-                                    });
-                                    realm.close();
-                                  });
-                                },
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.redAccent,
-                                ))
                           ],
                         ),
+                        subtitle: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              formattedDate(
+                                item.createdAt,
+                              ),
+                            ),
+                            CircleAvatar(
+                              radius: 10,
+                              child: Text(
+                                item.quantity.toString(),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        value: item.isPaid,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            realm.write(() {
+                              item.isPaid = value!;
+                            });
+                          });
+                        },
                       ),
                     ),
                   );
